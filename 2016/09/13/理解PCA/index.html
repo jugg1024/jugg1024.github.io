@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Machine Learning," />
+  <meta name="keywords" content="PCA,降维," />
 
 
 
@@ -84,31 +84,19 @@
 
 
 
-<meta name="description" content="都知道PCA可以做降维，那它为什么可以降维，究竟是怎么降维的呢？
-
-为什么我们要降维？
-
-我们的样本数据好好的，为什么要去做降维，第一个要想清楚这个问题。
-也许你是要训练一个分类器，觉得当前特征维度的太高，想去除冗余的维度，选择有区分性的维度也许你是觉得维度太高，导致系统速度慢，存储开销大也许你是觉得数据里面有噪声，想去除噪声总之很多原因导致我们要去做降维，但是有两个主要的因素，就是去除数据里的冗">
+<meta name="description" content="前言主成分分析 也就是PCA(Principal Component Analysis)，是一种常见的无监督的数据降维算法。它通过分析样本维度之间的相关性，来达到特征选取的目的。本文从理论分析，实际应用，以及代码实现三个角度来理解PCA。注：本文内容属于个人理解，如有不对的地方，还请交流指正。
+理论分析我们的样本数据好好的，为什么要去做降维？首先要明白我们为什么做降维。我们常见的机器学习问题中获得">
 <meta property="og:type" content="article">
 <meta property="og:title" content="理解PCA">
 <meta property="og:url" content="http://yoursite.com/2016/09/13/理解PCA/index.html">
-<meta property="og:site_name" content="Li Gen's Blog">
-<meta property="og:description" content="都知道PCA可以做降维，那它为什么可以降维，究竟是怎么降维的呢？
-
-为什么我们要降维？
-
-我们的样本数据好好的，为什么要去做降维，第一个要想清楚这个问题。
-也许你是要训练一个分类器，觉得当前特征维度的太高，想去除冗余的维度，选择有区分性的维度也许你是觉得维度太高，导致系统速度慢，存储开销大也许你是觉得数据里面有噪声，想去除噪声总之很多原因导致我们要去做降维，但是有两个主要的因素，就是去除数据里的冗">
-<meta property="og:updated_time" content="2016-09-13T14:53:12.000Z">
+<meta property="og:site_name" content="Li Gen">
+<meta property="og:description" content="前言主成分分析 也就是PCA(Principal Component Analysis)，是一种常见的无监督的数据降维算法。它通过分析样本维度之间的相关性，来达到特征选取的目的。本文从理论分析，实际应用，以及代码实现三个角度来理解PCA。注：本文内容属于个人理解，如有不对的地方，还请交流指正。
+理论分析我们的样本数据好好的，为什么要去做降维？首先要明白我们为什么做降维。我们常见的机器学习问题中获得">
+<meta property="og:updated_time" content="2016-09-17T07:22:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="理解PCA">
-<meta name="twitter:description" content="都知道PCA可以做降维，那它为什么可以降维，究竟是怎么降维的呢？
-
-为什么我们要降维？
-
-我们的样本数据好好的，为什么要去做降维，第一个要想清楚这个问题。
-也许你是要训练一个分类器，觉得当前特征维度的太高，想去除冗余的维度，选择有区分性的维度也许你是觉得维度太高，导致系统速度慢，存储开销大也许你是觉得数据里面有噪声，想去除噪声总之很多原因导致我们要去做降维，但是有两个主要的因素，就是去除数据里的冗">
+<meta name="twitter:description" content="前言主成分分析 也就是PCA(Principal Component Analysis)，是一种常见的无监督的数据降维算法。它通过分析样本维度之间的相关性，来达到特征选取的目的。本文从理论分析，实际应用，以及代码实现三个角度来理解PCA。注：本文内容属于个人理解，如有不对的地方，还请交流指正。
+理论分析我们的样本数据好好的，为什么要去做降维？首先要明白我们为什么做降维。我们常见的机器学习问题中获得">
 
 
 
@@ -131,7 +119,7 @@
 
   <link rel="canonical" href="http://yoursite.com/2016/09/13/理解PCA/"/>
 
-  <title> 理解PCA | Li Gen's Blog </title>
+  <title> 理解PCA | Li Gen </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -171,7 +159,7 @@
   <div class="custom-logo-site-title">
     <a href="/"  class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <span class="site-title">Li Gen's Blog</span>
+      <span class="site-title">Li Gen</span>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
@@ -213,16 +201,6 @@
         </li>
       
         
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             
@@ -243,12 +221,12 @@
         </li>
       
         
-        <li class="menu-item menu-item-commonweal">
-          <a href="/404.html" rel="section">
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
             
-            公益404
+            关于
           </a>
         </li>
       
@@ -308,6 +286,25 @@
           </span>
 
           
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/机器学习/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
 
           
             
@@ -337,23 +334,23 @@
       
 
       
-        <p>都知道PCA可以做降维，那它为什么可以降维，究竟是怎么降维的呢？</p>
-<ol>
-<li>为什么我们要降维？</li>
-</ol>
-<p>我们的样本数据好好的，为什么要去做降维，第一个要想清楚这个问题。</p>
-<p>也许你是要训练一个分类器，觉得当前特征维度的太高，想去除冗余的维度，选择有区分性的维度<br>也许你是觉得维度太高，导致系统速度慢，存储开销大<br>也许你是觉得数据里面有噪声，想去除噪声<br>总之很多原因导致我们要去做降维，但是有两个主要的因素，就是去除数据里的冗余和噪声。</p>
-<ol>
-<li>PCA是怎么去做降维的，怎么去除冗余和噪声的？</li>
-</ol>
-<p>PCA有一个假设，数据中越是有区分度的维度，他的方差越大，例如我们的信号本身。越是没有区分度的维度，方差越小能量越小，例如噪声；</p>
-<p>另外，如果两个维度相关性很高，那么其中一个维度就是冗余的，对于学习分类器没有很大的帮助，例如一个大学生的成绩里面，他的线性代数的成绩，和他的矩阵分析的成绩这两个相关性就很高，分类器只需要其中的一个来判断这个学生是工科生还是文科生。</p>
-<p>综合以上两点，我们降维之后的数据一定要每个维度的方差大，同时维度之间的相关性小。</p>
-<p>如何描述方差和相关性，有一个东西可以同时描述他们两——协方差矩阵！</p>
-<p>协方差矩阵是一个方阵，i，j列表示样本的第 i 维和第 j 维之间的相关性 ( i = j 时描述的是第 i 维的方差)。</p>
-<p>因此，理想的协方差矩阵的对角线应该是很大的值，而非对角线的位置都接近于0，这样才能保证方差大，相关性小呀！</p>
-<p>如果当前样本的协方差矩阵已经是对角矩阵了，那我们就不用做PCA降维了，因为他们的特性已经很好了！很不幸，我们的数据通常都不是那么好，协方差矩阵不是理想的样子，很可能相关性很大。那么很明确，我们要做的就是使得降维之后的数据协方差矩阵是对角矩阵。</p>
-<p>那么就要做矩阵对角化呗，什么方法可以得到对角矩阵，这个就是特征值分解，</p>
+        <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p><strong>主成分分析</strong> 也就是PCA(Principal Component Analysis)，是一种常见的无监督的数据降维算法。它通过分析样本维度之间的相关性，来达到特征选取的目的。本文从理论分析，实际应用，以及代码实现三个角度来理解PCA。<br><strong>注：本文内容属于个人理解，如有不对的地方，还请交流指正。</strong></p>
+<h4 id="理论分析"><a href="#理论分析" class="headerlink" title="理论分析"></a>理论分析</h4><h6 id="我们的样本数据好好的，为什么要去做降维？"><a href="#我们的样本数据好好的，为什么要去做降维？" class="headerlink" title="我们的样本数据好好的，为什么要去做降维？"></a>我们的样本数据好好的，为什么要去做降维？</h6><p>首先要明白我们为什么做降维。我们常见的机器学习问题中获得的真实的训练数据总是存在各种各样的问题：</p>
+<ul>
+<li>数据冗余。<br>  比如一个大学生的成绩样本，他的“线性代数”的成绩，和他的“矩阵分析”的成绩这两个相关性就很高，分类器只需要其中的一个来判断这个学生是工科生还是文科生。</li>
+<li>噪声数据<br>  在股票金融等实际的机器学习问题中，我们会遇到大量的数据，这些样本数据的维度非常高，同时有大量的干扰性数据。</li>
+</ul>
+<p>降维就是通过矩阵变换把高维度的特征映射到低纬度的空间中，去掉其中冗余和噪声的部分，从而得到精简而鲁棒的特征的过程。另外，我们有时候做降维还有一些其他的好处。</p>
+<ul>
+<li>降低存储开销<br>有些时候，对于一些检索系统，我们需要存储大量的样本特征，因此我们要尽量降低特征的维度。</li>
+<li>提高速度<br>降低特征维度可以提高我们算法的速度和效率。</li>
+</ul>
+<p>总之有很多原因导致我们要去做降维，PCA就是其中一种方法。</p>
+<h6 id="PCA如何降维？"><a href="#PCA如何降维？" class="headerlink" title="PCA如何降维？"></a>PCA如何降维？</h6><p>我们说了，降维的数学过程是去学习一个变换矩阵，把特征从高维空间映射到低维空间。那么这个矩阵如何学习得到呢？PCA中有以下两点假设：</p>
+<blockquote>
+<p>数据中越是有区分度的维度，他的方差越大，例如我们的信号本身。越是没有区分度的维度，方差越小能量越小，例如噪声；<br>另外，如果两个维度相关性很高，那么其中一个维度就是冗余的，对于学习分类器没有很大的帮助。</p>
+</blockquote>
+<p>综合以上两点，我们降维之后的数据一定要每个维度的方差大，同时维度之间的相关性小。<br>如何描述方差和相关性，有一个东西可以同时描述他们两——协方差矩阵！<br>协方差矩阵是一个方阵，i，j列表示样本的第 i 维和第 j 维之间的相关性 ( i = j 时描述的是第 i 维的方差)。<br>因此，理想的协方差矩阵的对角线应该是很大的值，而非对角线的位置都接近于0，这样才能保证方差大，相关性小呀！<br>如果当前样本的协方差矩阵已经是对角矩阵了，那我们就不用做PCA降维了，因为他们的特性已经很好了！很不幸，我们的数据通常都不是那么好，协方差矩阵不是理想的样子，很可能相关性很大。那么很明确，我们要做的就是使得降维之后的数据协方差矩阵是对角矩阵。<br>那么就要做矩阵对角化呗，什么方法可以得到对角矩阵，这个就是特征值分解，</p>
 <p>A = P <em> B </em> P(T)    （1）</p>
 <p>B就是对角化的矩阵，A是原协方差矩阵，而我们知道B对角线上都是特征值，P里面都是对应的特征向量。如果我们降维之后的协方差矩阵张成B这个样就好了！</p>
 <p>说到这里，协方差矩阵的公式还没提呢。</p>
@@ -366,10 +363,8 @@
 <p>S’就是我们降维之后的样本数据。 我们把公式(1) A = P <em> B </em> P(T)，变一个样子就是 P(T) <em> A </em> P = B; 结合式子（3），于是乎 </p>
 <p>B = P(T) <em> A </em> P = P(T) <em> S(T) </em> S <em> P / (m - 1) =  (SP)(T) </em> (SP) / (m - 1)；再结合式子（4）</p>
 <p>SP不就是我们想要的降维之后的数据S’吗？这里，如果把P中的特征向量去掉几个特征值低的，那么不仅选出了方差大的数据，还去除了冗余。因此，PCA就达到了目的了。</p>
-<ol>
-<li>总结</li>
-</ol>
-<p>所以降维的公式也出来了， S’ = S * P，P是特征值大的维度对应的特征向量。</p>
+<pre><code>总结
+</code></pre><p>所以降维的公式也出来了， S’ = S * P，P是特征值大的维度对应的特征向量。</p>
 <p>这是今天看完PCA之后的一点小总结，关于如何做特征值分解，今天也看了许久，感觉要补充的矩阵只是还是很有一些的。</p>
 <p>贴一下<a href="http://mathfaculty.fullerton.edu/mathews/n2003/QRMethodMod.html" target="_blank" rel="external">http://mathfaculty.fullerton.edu/mathews/n2003/QRMethodMod.html</a> 提到的用QR method来做特征值分解的伪代码。</p>
 <p>QR Algorithm.  The pseudocode for the QR method is:</p>
@@ -404,7 +399,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Machine-Learning/" rel="tag">#Machine Learning</a>
+            <a href="/tags/PCA/" rel="tag">#PCA</a>
+          
+            <a href="/tags/降维/" rel="tag">#降维</a>
           
         </div>
       
@@ -516,11 +513,18 @@
           </div>
 
           
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
 
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -578,7 +582,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#理论分析"><span class="nav-number">2.</span> <span class="nav-text">理论分析</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#我们的样本数据好好的，为什么要去做降维？"><span class="nav-number">2.0.1.</span> <span class="nav-text">我们的样本数据好好的，为什么要去做降维？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#PCA如何降维？"><span class="nav-number">2.0.2.</span> <span class="nav-text">PCA如何降维？</span></a></li></ol></li></ol></li></ol></div>
             
           </div>
         </section>
